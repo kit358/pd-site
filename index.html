@@ -42,9 +42,9 @@ const questions = [
 const pairing = {
   "🍫 チョコ系": ["☕ コーヒー", "🍵 紅茶", "🥛 牛乳"],
   "🍡 和菓子系": ["🍵 緑茶", "🍂 ほうじ茶", "🥛 牛乳"],
-  "🍪 焼き菓子系": ["☕ カフェラテ", "🍵 ミルクティー", "🍎 アップルテー"],
-  "🍰 カステラ": ["🍵 緑茶", "☕ コーヒー", "🍵 ストレートティー","🥛牛乳],
-  "🥐 クリーム系": ["☕ カフェオレ", "🍵 紅茶", "🫖お茶"]
+  "🍪 焼き菓子系": ["☕ カフェラテ", "🍵 ミルクティー", "🍵紅茶"],
+  "🍰 カステラ": ["🍵 緑茶", "☕ コーヒー", "🍵 ストレートティー","🥛牛乳"],
+  "🥐 クリーム系": ["☕ カフェオレ", "🍵 紅茶"]
 };
 
 let current = 0;
@@ -98,18 +98,38 @@ function next(key, value) {
 
 function finish(sweets) {
   let drinks = pairing[sweets] || [];
-  if (banned.coffee) drinks = drinks.filter(d => !d.includes("コーヒー") && !d.includes("カフェ"));
-  if (banned.tea) drinks = drinks.filter(d => !d.includes("茶") && !d.includes("ティー"));
+
+  if (banned.coffee)
+    drinks = drinks.filter(d => !d.includes("コーヒー") && !d.includes("カフェ"));
+
+  if (banned.tea)
+    drinks = drinks.filter(d => !d.includes("茶") && !d.includes("ティー"));
 
   const result = document.getElementById("result");
-  result.innerHTML = `
-    <h3>💖 あなたへのおすすめ</h3>
-        <p>${sweets} に合う飲み物はこちら：</p>
-        
-    <ol>${drinks.slice(0,3).map(d => `<li>${d}</li>`).join('')}</ol>
-    <h5>※ 味覚や好みには個人差があります。
-        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。</h5>
-  `;
+
+  // ⭐ 飲み物が残らなかった場合の処理
+  if (drinks.length === 0) {
+    result.innerHTML = `
+      <h3>💖 あなたへのおすすめ</h3>
+      <p>${sweets} に合う飲み物として、条件に合う候補が見つかりませんでした。</p>
+      <p>🥛 牛乳や 🧃 ジュースなど、普段よく飲むものと合わせてみるのもおすすめです。</p>
+      <h5>
+        ※ 味覚や好みには個人差があります。<br>
+        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。
+      </h5>
+    `;
+  } else {
+    result.innerHTML = `
+      <h3>💖 あなたへのおすすめ</h3>
+      <p>${sweets} に合う飲み物はこちら：</p>
+      <ol>${drinks.slice(0,3).map(d => `<li>${d}</li>`).join('')}</ol>
+      <h5>
+        ※ 味覚や好みには個人差があります。<br>
+        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。
+      </h5>
+    `;
+  }
+
 
   document.getElementById("quiz").innerHTML = "<h3>🎉 診断完了！</h3><p>友だちにもすすめてみよう 💌</p><button class='restart' onclick='restart()'>🔁 もう一度診断する</button>";
 }
@@ -125,6 +145,7 @@ function restart() {
 </script>
 </body>
 </html>
+
 
 
 
