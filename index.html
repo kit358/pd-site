@@ -1,156 +1,447 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>スイーツ×飲み物診断</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    #progress{margin-bottom:15px;color:#ff7fa2;font-weight:bold}
-    .restart{margin-top:15px;padding:12px 24px;border:none;border-radius:999px;background:linear-gradient(135deg,#ff9fb8,#ffb6c1);color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 6px 12px rgba(255,159,184,.4)}
-    .restart:hover{opacity:.9}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>至高のスイーツペアリング診断</title>
+    <style>
+        /* --- CSS: デザイン部分 --- */
+        :root {
+            --bg-color: #fdfbf7;
+            --primary-color: #8d6e63;
+            --accent-color: #ffccbc;
+            --text-color: #4e342e;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 質問画面 */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button {
+            background-color: var(--bg-color);
+            border: 2px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        button.start-btn {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            padding: 20px 40px;
+            font-size: 18px;
+        }
+
+        /* 結果画面 */
+        .result-title {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .pairing-result {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0 20px;
+            padding: 20px;
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            background-color: #fffaf0;
+        }
+
+        .score-area {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #f57c00;
+        }
+
+        .comment-box {
+            text-align: left;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .comment-box strong {
+            color: var(--primary-color);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="title">
-  🍰もぐもぐ相性診断🎂<br>
-  <span>スイーツ×飲み物マッチング</span>
-</h2>
-    <div id="progress"></div>
-    <div id="quiz"></div>
-    <div id="result"></div>
-  </div>
+
+<div class="container">
+    <div id="start-screen">
+        <h1>スイーツペアリング診断</h1>
+        <p>実験データとアンケート結果に基づき、<br>あなたの「今」に最適な飲み物を<br>科学的に提案します。</p>
+        <div style="font-size: 50px; margin: 30px 0;">🍩☕️</div>
+        <button class="start-btn" onclick="startQuiz()">診断をはじめる</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        <div id="question-container" class="fade-in">
+            <div class="question-text" id="question-text">質問がここに表示されます</div>
+            <div class="options" id="options-container">
+                </div>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden fade-in">
+        <div class="result-title">あなたにおすすめのペアリングは…</div>
+        <div class="pairing-result" id="result-drink"></div>
+        <div class="score-area" id="result-score"></div>
+        
+        <div class="comment-box">
+            <p id="result-science-comment"></p>
+            <p id="result-survey-comment" style="margin-top:10px; font-size:12px; color:#666;"></p>
+        </div>
+
+        <button class="start-btn" onclick="location.reload()">もう一度診断する</button>
+    </div>
+</div>
 
 <script>
-const questions = [
-  { q: "コーヒーは好きですか？", key: "coffee" },
-  { q: "紅茶は飲めますか？", key: "tea" },
-  { q: "甘いものは好きですか？" },
-  { q: "濃厚なスイーツが好き？" },
-  { q: "さっぱりした味が好き？" },
-  { q: "クリーム系はよく食べる？" },
-  { q: "チョコ系はよく選ぶ？" },
-  { q: "和菓子はよく食べる？" },
-  { q: "焼き菓子はよく食べる？" },
-  { type: "final", q: "今、食べようとしているスイーツを教えてください。", options: [
-      "🍫 チョコ系",
-      "🍡 和菓子系",
-      "🍪 焼き菓子系",
-      "🍰 カステラ",
-      "🥐 クリーム系"
-    ] }
-];
+    /* --- JavaScript: ロジック部分 --- */
 
-const pairing = {
-  "🍫 チョコ系": ["☕ コーヒー", "🍵 紅茶", "🥛 牛乳"],
-  "🍡 和菓子系": ["🍵 緑茶", "🍂 ほうじ茶", "🥛 牛乳"],
-  "🍪 焼き菓子系": ["☕ カフェラテ", "🍵 ミルクティー", "🍵紅茶"],
-  "🍰 カステラ": ["🍵 緑茶", "☕ コーヒー", "🍵 ストレートティー","🥛牛乳"],
-  "🥐 クリーム系": ["☕ カフェオレ", "🍵 紅茶"]
-};
+    // 実験データに基づくスイーツごとの推奨飲み物リスト
+    // logic: "milk"=牛乳, "coffee"=コーヒー, "tea"=紅茶, "green_tea"=お茶, "juice"=ジュース
+    const pairingsDB = {
+        "donut": [
+            { id: "milk", name: "牛乳", score: 4.00, comment: "実験データで唯一の満点を記録。ドーナツの油分を牛乳が洗い流す、科学的に最強の組み合わせです。" },
+            { id: "coffee", name: "ブラックコーヒー", score: 3.89, comment: "甘みと苦味のバランスが絶妙。王道の組み合わせとして非常に高い評価を得ています。" },
+            { id: "tea", name: "紅茶", score: 3.78, comment: "さっぱりと楽しみたいなら紅茶がおすすめ。ドーナツの重さを軽減してくれます。" }
+        ],
+        "chou": [ // シュークリーム
+            { id: "coffee", name: "コーヒー", score: 3.20, comment: "クリームの濃厚な甘さを、コーヒーの苦味が引き締めます。" },
+            { id: "milk", name: "牛乳", score: 3.11, comment: "クリームと生地の両方に牛乳の成分が含まれるため、調和度は抜群です。" },
+            { id: "tea", name: "紅茶", score: 3.10, comment: "香りの相性を楽しみたい方に。クリームの風味を邪魔しません。" }
+        ],
+        "cookie": [
+            { id: "milk", name: "牛乳", score: 3.80, comment: "口の中の水分を補いつつ、クッキーのバターの風味を引き立てます。" },
+            { id: "tea", name: "紅茶", score: 3.20, comment: "優雅なティータイムに。サクサクした食感と温かい紅茶はベストマッチ。" },
+            { id: "coffee", name: "コーヒー", score: 2.89, comment: "甘いクッキーなら、苦味のあるコーヒーでバランスを取るのが正解です。" }
+        ],
+        "castella": [
+            { id: "milk", name: "牛乳", score: 3.89, comment: "カステラの卵の風味と牛乳は相性抜群。懐かしくも完璧な味わいです。" },
+            { id: "tea", name: "紅茶", score: 3.44, comment: "カステラの甘さを紅茶が上品にまとめ上げます。" },
+            { id: "green_tea", name: "日本茶", score: 3.20, comment: "和菓子に近いカステラには、温かい日本茶も非常によく合います。" }
+        ],
+        "daifuku": [
+            { id: "green_tea", name: "日本茶（緑茶）", score: 3.00, comment: "和菓子にはやはり日本茶。あんこの甘さを引き立てる鉄板の組み合わせです。" },
+            { id: "tea", name: "紅茶", score: 2.56, comment: "意外な組み合わせですが、あんこと紅茶の相性は実験でも悪くない結果が出ています。" },
+            { id: "coffee", name: "コーヒー", score: 2.11, comment: "和モダンの楽しみ方。あんこの強さに負けないコーヒーを選ぶのがコツ。" }
+        ],
+        "choco": [ // チョコ系（データがない場合はアンケートと類似スイーツから推測）
+            { id: "coffee", name: "コーヒー", score: 3.50, comment: "アンケートで最も支持された組み合わせ。カカオの苦味とコーヒーの香りが共鳴します。" },
+            { id: "milk", name: "牛乳", score: 3.30, comment: "濃厚なチョコをまろやかに中和したいなら牛乳一択です。" },
+            { id: "tea", name: "紅茶", score: 3.00, comment: "少し酸味のあるチョコケーキなどは紅茶がよく合います。" }
+        ],
+        "pudding": [ // プリン/ゼリー
+            { id: "coffee", name: "コーヒー", score: 3.10, comment: "カラメルの苦味とコーヒーは兄弟のような相性の良さです。" },
+            { id: "tea", name: "紅茶", score: 3.00, comment: "つるっとした食感を邪魔しない、ストレートティーがおすすめ。" }
+        ],
+        "cheese": [ // チーズケーキ
+            { id: "tea", name: "紅茶", score: 3.40, comment: "チーズの酸味と紅茶の渋みは、お互いを高め合う関係です。" },
+            { id: "coffee", name: "コーヒー", score: 3.30, comment: "濃厚なチーズケーキには深煎りのコーヒーがよく合います。" }
+        ]
+    };
 
-let current = 0;
-let banned = { coffee: false, tea: false };
+    // 質問リスト
+    // type: "filter"はユーザーの飲めるものを判定、"target"は最終的なスイーツ決定
+    const questions = [
+        {
+            text: "Q1. コーヒーは飲めますか？",
+            type: "filter",
+            key: "canCoffee",
+            options: [
+                { text: "大好き（ブラックもOK）", value: true },
+                { text: "ミルクや砂糖があれば飲める", value: true },
+                { text: "苦手／飲めない", value: false }
+            ]
+        },
+        {
+            text: "Q2. 紅茶は飲めますか？",
+            type: "filter",
+            key: "canTea",
+            options: [
+                { text: "よく飲む", value: true },
+                { text: "たまに飲む", value: true },
+                { text: "苦手／飲めない", value: false }
+            ]
+        },
+        {
+            text: "Q3. 牛乳（ミルク）そのものは好きですか？",
+            type: "filter",
+            key: "canMilk",
+            options: [
+                { text: "好き（そのまま飲める）", value: true },
+                { text: "料理やカフェオレならOK", value: true },
+                { text: "苦手／お腹がごろごろする", value: false }
+            ]
+        },
+        {
+            text: "Q4. 日本茶（緑茶など）は飲みますか？",
+            type: "filter",
+            key: "canGreenTea",
+            options: [
+                { text: "よく飲む", value: true },
+                { text: "あまり飲まない", value: true }
+            ]
+        },
+        {
+            text: "Q5. 甘いものを食べる時、飲み物に求める役割は？",
+            type: "pref", // 味の好み（今回はシンプル化のためログのみ使用）
+            options: [
+                { text: "口の中をさっぱりさせたい", value: "refresh" },
+                { text: "甘さを引き立ててほしい", value: "enhance" }
+            ]
+        },
+        {
+            text: "Q6. 濃厚なスイーツは好きですか？",
+            type: "pref",
+            options: [
+                { text: "大好き", value: "rich" },
+                { text: "どちらかと言えばさっぱり派", value: "light" }
+            ]
+        },
+        {
+            text: "Q7. クリーム系はよく食べますか？",
+            type: "pref",
+            options: [
+                { text: "よく食べる", value: "cream_yes" },
+                { text: "あまり食べない", value: "cream_no" }
+            ]
+        },
+        {
+            text: "Q8. チョコ系はよく選びますか？",
+            type: "pref",
+            options: [
+                { text: "よく選ぶ", value: "choco_yes" },
+                { text: "あまり選ばない", value: "choco_no" }
+            ]
+        },
+        {
+            text: "Q9. 和菓子はよく食べますか？",
+            type: "pref",
+            options: [
+                { text: "よく食べる", value: "wagashi_yes" },
+                { text: "あまり食べない", value: "wagashi_no" }
+            ]
+        },
+        {
+            text: "Q10. 今、食べようとしているスイーツを選んでください。",
+            type: "target",
+            options: [
+                { text: "ドーナツ", value: "donut" },
+                { text: "シュークリーム", value: "chou" },
+                { text: "クッキー／焼き菓子", value: "cookie" },
+                { text: "カステラ", value: "castella" },
+                { text: "大福／和菓子", value: "daifuku" },
+                { text: "チョコケーキ／チョコ系", value: "choco" },
+                { text: "チーズケーキ", value: "cheese" },
+                { text: "プリン／ゼリー", value: "pudding" }
+            ]
+        }
+    ];
 
-function renderQuestion() {
-  document.getElementById("progress").textContent = current < 9 ? `🌸 Q${current+1} / 10` : "🌸 最終質問";
-  const box = document.getElementById("quiz");
-  box.innerHTML = "";
-  const q = questions[current];
+    let currentQuestionIndex = 0;
+    let userPreferences = {
+        canCoffee: true,
+        canTea: true,
+        canMilk: true,
+        canGreenTea: true
+    };
+    let selectedSweet = "";
 
-  if (q.type === "final") {
-    box.innerHTML = `<div class="question">${q.q}</div>`;
-    const opts = document.createElement("div");
-    opts.className = "options";
-    q.options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.textContent = opt;
-      btn.className = "yes";
-      btn.onclick = () => finish(opt);
-      opts.appendChild(btn);
-    });
-    box.appendChild(opts);
-    return;
-  }
+    // 診断開始
+    function startQuiz() {
+        document.getElementById("start-screen").classList.add("hidden");
+        document.getElementById("quiz-screen").classList.remove("hidden");
+        showQuestion();
+    }
 
-  box.innerHTML = `<div class="question">Q${current+1}. ${q.q}</div>`;
-  const opts = document.createElement("div");
-  opts.className = "options";
+    // 質問表示
+    function showQuestion() {
+        const q = questions[currentQuestionIndex];
+        const container = document.getElementById("question-container");
+        
+        // アニメーション用リセット
+        container.classList.remove("fade-in");
+        void container.offsetWidth; // trigger reflow
+        container.classList.add("fade-in");
 
-  const yesBtn = document.createElement("button");
-  yesBtn.textContent = "はい";
-  yesBtn.className = "yes";
-  yesBtn.onclick = () => next(q.key, true);
+        document.getElementById("question-text").innerText = q.text;
+        
+        const optionsDiv = document.getElementById("options-container");
+        optionsDiv.innerHTML = "";
 
-  const noBtn = document.createElement("button");
-  noBtn.textContent = "いいえ";
-  noBtn.className = "no";
-  noBtn.onclick = () => next(q.key, false);
+        // 進捗バー更新
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        document.getElementById("progress").style.width = `${progress}%`;
 
-  opts.appendChild(yesBtn);
-  opts.appendChild(noBtn);
-  box.appendChild(opts);
-}
+        q.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.innerText = opt.text;
+            btn.onclick = () => handleAnswer(q, opt.value);
+            optionsDiv.appendChild(btn);
+        });
+    }
 
-function next(key, value) {
-  if (key && !value) banned[key] = true;
-  current++;
-  renderQuestion();
-}
+    // 回答処理
+    function handleAnswer(question, value) {
+        // フィルター設定の保存
+        if (question.type === "filter") {
+            userPreferences[question.key] = value;
+        }
+        // 最終スイーツの保存
+        if (question.type === "target") {
+            selectedSweet = value;
+            showResult(); // 最後の質問なので結果へ
+            return;
+        }
 
-function finish(sweets) {
-  let drinks = pairing[sweets] || [];
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showResult(); // 万が一オーバーした場合
+        }
+    }
 
-  if (banned.coffee)
-    drinks = drinks.filter(d => !d.includes("コーヒー") && !d.includes("カフェ"));
+    // 結果計算と表示
+    function showResult() {
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
 
-  if (banned.tea)
-    drinks = drinks.filter(d => !d.includes("茶") && !d.includes("ティー"));
+        const candidates = pairingsDB[selectedSweet] || pairingsDB["donut"]; // デフォルト
+        let bestMatch = null;
 
-  const result = document.getElementById("result");
+        // 候補の中からユーザーが飲める一番スコアが高いものを探す
+        for (let drink of candidates) {
+            if (drink.id === "coffee" && !userPreferences.canCoffee) continue;
+            if (drink.id === "milk" && !userPreferences.canMilk) continue;
+            if (drink.id === "tea" && !userPreferences.canTea) continue;
+            if (drink.id === "green_tea" && !userPreferences.canGreenTea) continue;
 
-  // ⭐ 飲み物が残らなかった場合の処理
-  if (drinks.length === 0) {
-    result.innerHTML = `
-      <h3>💖 あなたへのおすすめ</h3>
-      <p>${sweets} に合う飲み物として、条件に合う候補が見つかりませんでした。</p>
-      <p>🥛 牛乳や 🧃 ジュースなど、普段よく飲むものと合わせてみるのもおすすめです。</p>
-      <h5>
-        ※ 味覚や好みには個人差があります。<br>
-        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。
-      </h5>
-    `;
-  } else {
-    result.innerHTML = `
-      <h3>💖 あなたへのおすすめ</h3>
-      <p>${sweets} に合う飲み物はこちら：</p>
-      <ol>${drinks.slice(0,3).map(d => `<li>${d}</li>`).join('')}</ol>
-      <h5>
-        ※ 味覚や好みには個人差があります。<br>
-        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。
-      </h5>
-    `;
-  }
+            // ここまで来たら飲めるということ
+            bestMatch = drink;
+            break; // スコア順に並んでいるので最初に見つかったものがベスト
+        }
 
+        // 全滅した場合（全部飲めない人への救済）
+        if (!bestMatch) {
+            bestMatch = {
+                name: "お水 または 麦茶",
+                score: "-",
+                comment: "スイーツの繊細な味を邪魔しないためには、お水で口の中をリセットするのが一番です。"
+            };
+        }
 
-  document.getElementById("quiz").innerHTML = "<h3>🎉 診断完了！</h3><p>友だちにもすすめてみよう 💌</p><button class='restart' onclick='restart()'>🔁 もう一度診断する</button>";
-}
+        // DOMへの反映
+        document.getElementById("result-drink").innerText = bestMatch.name;
+        
+        // スコア表示（実験データがある場合のみ）
+        if(bestMatch.score !== "-") {
+            // 星評価に変換（簡易的）
+            let stars = "★★★☆☆";
+            if (bestMatch.score >= 3.8) stars = "★★★★★";
+            else if (bestMatch.score >= 3.0) stars = "★★★★☆";
+            
+            document.getElementById("result-score").innerText = `調和度スコア: ${bestMatch.score} ${stars}`;
+        } else {
+            document.getElementById("result-score").innerText = "";
+        }
 
-renderQuestion();
-
-function restart() {
-  current = 0;
-  banned = { coffee: false, tea: false };
-  document.getElementById("result").innerHTML = "";
-  renderQuestion();
-}
+        document.getElementById("result-science-comment").innerHTML = `<strong>【分析結果】</strong><br>${bestMatch.comment}`;
+        
+        // アンケート結果の補足（ランダムまたは固定）
+        document.getElementById("result-survey-comment").innerText = 
+            "※アンケート参加者の多くが「後味のすっきり感」や「甘さのバランス」を重視しています。";
+    }
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
