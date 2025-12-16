@@ -1,0 +1,90 @@
+/* 全体 */
+body {
+  font-family: "Hiragino Maru Gothic Pro", "Meiryo", sans-serif;
+  background: linear-gradient(135deg, #ffe6f0, #eef3ff);
+  padding: 30px;
+}
+
+/* カード */
+.container {
+  max-width: 620px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 30px 25px;
+  border-radius: 22px;
+  box-shadow: 0 15px 30px rgba(255, 182, 193, 0.35);
+  text-align: center;
+}
+
+/* タイトル */
+h2 {
+  color: #ff6f91;
+  margin-bottom: 25px;
+  font-size: 1.9rem;
+}
+
+/* 質問文 */
+.question {
+  font-size: 1.25rem;
+  margin-bottom: 18px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 選択肢 */
+.options button {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ff9fb8, #ffb6c1);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 6px 12px rgba(255, 159, 184, 0.4);
+}
+
+.options button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(255, 159, 184, 0.5);
+}
+
+/* 結果表示 */
+#result {
+  margin-top: 30px;
+  padding: 22px;
+  background: #fff5f8;
+  border-radius: 18px;
+  text-align: left;
+  animation: fadeIn 0.5s ease;
+}
+
+#result h3 {
+  color: #ff6f91;
+  margin-bottom: 12px;
+}
+
+/* リスト */
+ul {
+  padding-left: 20px;
+}
+
+ul li {
+  margin-bottom: 8px;
+}
+
+/* フェードイン */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

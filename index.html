@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>スイーツ×飲み物診断</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #progress{margin-bottom:15px;color:#ff7fa2;font-weight:bold}
+    .restart{margin-top:15px;padding:12px 24px;border:none;border-radius:999px;background:linear-gradient(135deg,#ff9fb8,#ffb6c1);color:#fff;font-weight:bold;cursor:pointer;box-shadow:0 6px 12px rgba(255,159,184,.4)}
+    .restart:hover{opacity:.9}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🍰 スイーツ×飲み物診断</h2>
+    <div id="progress"></div>
+    <div id="quiz"></div>
+    <div id="result"></div>
+  </div>
+
+<script>
+const questions = [
+  { q: "コーヒーは好きですか？", key: "coffee" },
+  { q: "紅茶は飲めますか？", key: "tea" },
+  { q: "甘いものは好きですか？" },
+  { q: "濃厚なスイーツが好き？" },
+  { q: "さっぱりした味が好き？" },
+  { q: "クリーム系はよく食べる？" },
+  { q: "チョコ系はよく選ぶ？" },
+  { q: "和菓子はよく食べる？" },
+  { q: "焼き菓子はよく食べる？" },
+  { type: "final", q: "今、食べようとしているスイーツを教えてください。", options: [
+      "🍫 チョコ系",
+      "🍡 和菓子系",
+      "🍪 焼き菓子系",
+      "🍰 カステラ",
+      "🥐 クリーム系"
+    ] }
+];
+
+const pairing = {
+  "🍫 チョコ系": ["☕ コーヒー", "🍵 紅茶", "🥛 牛乳"],
+  "🍡 和菓子系": ["🍵 緑茶", "🍂 ほうじ茶", "🥛 牛乳"],
+  "🍪 焼き菓子系": ["☕ カフェラテ", "🍵 ミルクティー", "🍎 アップルティー"],
+  "🍰 カステラ": ["🍵 緑茶", "☕ コーヒー", "🍵 ストレートティー"],
+  "🥐 クリーム系": ["☕ カフェオレ", "🍵 紅茶", "🫖 チャイ"]
+};
+
+let current = 0;
+let banned = { coffee: false, tea: false };
+
+function renderQuestion() {
+  document.getElementById("progress").textContent = current < 9 ? `🌸 Q${current+1} / 10` : "🌸 最終質問";
+  const box = document.getElementById("quiz");
+  box.innerHTML = "";
+  const q = questions[current];
+
+  if (q.type === "final") {
+    box.innerHTML = `<div class="question">${q.q}</div>`;
+    const opts = document.createElement("div");
+    opts.className = "options";
+    q.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.className = "yes";
+      btn.onclick = () => finish(opt);
+      opts.appendChild(btn);
+    });
+    box.appendChild(opts);
+    return;
+  }
+
+  box.innerHTML = `<div class="question">Q${current+1}. ${q.q}</div>`;
+  const opts = document.createElement("div");
+  opts.className = "options";
+
+  const yesBtn = document.createElement("button");
+  yesBtn.textContent = "はい";
+  yesBtn.className = "yes";
+  yesBtn.onclick = () => next(q.key, true);
+
+  const noBtn = document.createElement("button");
+  noBtn.textContent = "いいえ";
+  noBtn.className = "no";
+  noBtn.onclick = () => next(q.key, false);
+
+  opts.appendChild(yesBtn);
+  opts.appendChild(noBtn);
+  box.appendChild(opts);
+}
+
+function next(key, value) {
+  if (key && !value) banned[key] = true;
+  current++;
+  renderQuestion();
+}
+
+function finish(sweets) {
+  let drinks = pairing[sweets] || [];
+  if (banned.coffee) drinks = drinks.filter(d => !d.includes("コーヒー") && !d.includes("カフェ"));
+  if (banned.tea) drinks = drinks.filter(d => !d.includes("茶") && !d.includes("ティー"));
+
+  const result = document.getElementById("result");
+  result.innerHTML = `
+    <h3>💖 あなたへのおすすめ</h3>
+        <p>${sweets} に合う飲み物はこちら：</p>
+        
+    <ol>${drinks.slice(0,3).map(d => `<li>${d}</li>`).join('')}</ol>
+    <h5>※ 味覚や好みには個人差があります。
+        本診断結果は参考として、新しい組み合わせを楽しむきっかけにしてください。</h5>
+  `;
+
+  document.getElementById("quiz").innerHTML = "<h3>🎉 診断完了！</h3><p>友だちにもすすめてみよう 💌</p><button class='restart' onclick='restart()'>🔁 もう一度診断する</button>";
+}
+
+renderQuestion();
+
+function restart() {
+  current = 0;
+  banned = { coffee: false, tea: false };
+  document.getElementById("result").innerHTML = "";
+  renderQuestion();
+}
+</script>
+</body>
+</html>
+
+
